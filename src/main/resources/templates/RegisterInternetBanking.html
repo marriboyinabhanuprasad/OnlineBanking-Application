@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register For Internet Banking</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+
+        .form-section h3 {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Register For Internet Banking</h2>
+    <form id="registerForm">
+        <div class="form-section">
+            <div class="form-group">
+                <label for="accountNumber">Account Number:</label>
+                <input type="text" id="accountNumber" name="accountNumber" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Login Password:</label>
+                <input type="password" id="loginPassword" name="loginPassword" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="confirmLoginPassword">Confirm Login Password:</label>
+                <input type="password" id="confirmLoginPassword" name="confirmLoginPassword" class="form-control"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="transactionPassword">Transaction Password:</label>
+                <input type="password" id="transactionPassword" name="transactionPassword" class="form-control"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="confirmTransactionPassword">Confirm Transaction Password:</label>
+                <input type="password" id="confirmTransactionPassword" name="confirmTransactionPassword"
+                       class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="otp">OTP:</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="otp" name="otp">
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-secondary" id="sendOtpButton" disabled>Send OTP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <div class="login-link">
+        <p>Already have an account? <a href="/api/user/login">Login here</a></p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+
+    $(document).ready(function () {
+        $('#accountNumber').on('input', function () {
+            var accountNumber = $(this).val();
+            if (accountNumber.length === 12) {
+                $('#sendOtpButton').prop('disabled', false);
+            } else {
+                $('#sendOtpButton').prop('disabled', true);
+            }
+        });
+
+        $('#sendOtpButton').click(function () {
+            const accountNumber = $('#accountNumber').val();
+            const sendOtpUri = 'http://localhost:8080/api/user/send-otp?accountNumber=' + accountNumber + '&otpType=INTERNET_BANKING_REGISTRATION';
+
+            fetch(sendOtpUri, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'OTP sent successfully',
+                            text: 'OTP has been sent to your registered mobile number.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    } else if (!response.success) {
+                        return response.json().then(data => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                        });
+                    }
+                });
+        });
+        document.getElementById('registerForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = {
+                accountNumber: document.getElementById('accountNumber').value,
+                loginPassword: document.getElementById('loginPassword').value,
+                confirmLoginPassword: document.getElementById('confirmLoginPassword').value,
+                transactionPassword: document.getElementById('transactionPassword').value,
+                confirmTransactionPassword: document.getElementById('confirmTransactionPassword').value,
+                otp: document.getElementById('otp').value,
+            };
+
+            const apiUrl = 'http://localhost:8080/api/user/register-internet-Banking';
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Registration successful',
+                            text: response.message,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/api/user/login';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: response.error.code,
+                            text: response.error.message,
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during registration:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Registration Error',
+                        text: 'An unknown error occurred',
+                    });
+                });
+        });
+    });
+</script>
+</body>
+</html>

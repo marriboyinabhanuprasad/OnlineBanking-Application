@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Box</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .admin-box {
+            width: 300px;
+            height: auto;
+            background-color: black;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .user-details {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .user-detail {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="admin-box" id="adminBox" style="display: none;">
+        <div id="userDetails">
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var roles = localStorage.getItem('roles'); // Assuming 'roles' key contains a comma-separated string of roles
+        var rolesArray = roles ? roles.split(',') : []; // Convert to array
+
+        if (rolesArray.includes('ADMIN')) {
+            document.getElementById('adminBox').style.display = 'flex';
+            fetchUserDetails();
+        }
+    });
+
+    function fetchUserDetails() {
+        fetch('http://localhost:8080/api/admin/pendingActions', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('jwtToken')
+            }
+        })
+            .then(response => response.json())
+            .then(users => {
+                var userDetails = document.getElementById('userDetails');
+                userDetails.innerHTML = '';
+
+                if (users.length === 0) {
+                    return;
+                }
+
+                users.forEach(user => {
+                    userDetails.innerHTML += `
+                    <div class="user-detail" id="user-${user.id}">
+                        <p>Name: ${user.firstName} ${user.lastName}</p>
+                        <p>Email: ${user.email}</p>
+                        <div class="button-group">
+                            <button class="btn btn-success" onclick="approveUser('${user.uuid}')">Approve</button>
+                            <button class="btn btn-danger" onclick="declineUser('${user.uuid}')">Decline</button>
+                        </div>
+                    </div>
+                `;
+                });
+            })
+            .catch(error => console.error('Error fetching user details:', error));
+    }
+
+
+    function approveUser(userId) {
+        apiCall(userId, 'APPROVE');
+    }
+
+    function declineUser(userId) {
+        apiCall(userId, 'DISAPPROVE');
+    }
+
+    function apiCall(userId, type) {
+        fetch('http://localhost:8080/api/admin/action/account/' + userId + '?adminActionType=' + type, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('jwtToken')
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.error('Error performing action:', error));
+    }
+</script>
+</body>
+</html>

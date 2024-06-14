@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Box with Buttons</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            height: 100vh;
+        }
+
+        .home-container {
+            width: 100%;
+            height: 120px;
+            background-color: lightblue;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container-wrapper {
+            flex-grow: 0; /* Take up the remaining space */
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            padding-right: 40%; /* Adjust as needed */
+        }
+
+        .container {
+            width: 250px; /* adjust as needed */
+            height: 300px; /* adjust as needed */
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .button {
+            display: block;
+            width: 100px; /* adjust as needed */
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 5px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button-link {
+            display: block;
+            width: 100px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 5px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="home-container">
+    Home
+</div>
+<div class="container-wrapper">
+    <div class="container">
+        <div class="buttons">
+            <a href="/api/user/login" class="button-link">Login</a>
+            <a href="/api/user/register-internet-Banking" class="button-link">New User? Register</a>
+            <a href="/api/user/register" class="button-link">Apply Online for Account</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

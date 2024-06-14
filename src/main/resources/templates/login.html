@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        .container {
+            max-width: 400px;
+            margin-top: 50px;
+        }
+
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <div class="register-link">
+        <p>First time User? <a th:href="@{/api/user/register}">Register</a></p>
+        <p><a th:href="@{/api/user/forgot-userId}">Forgot User ID?</a></p>
+        <p><a th:href="@{/api/user/forgot-password}">Forgot Password? </a></p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const email = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const apiUrl = 'http://localhost:8080/api/user/login';
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({email, password})
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error.message || 'Login failed');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.accessToken) {
+                    localStorage.setItem("userId", data.userId);
+                    localStorage.setItem('jwtToken', 'Bearer ' + data.accessToken);
+                    localStorage.setItem('roles', data.roles);
+                    window.location.href = '/api/user/dashboard';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login failed',
+                        text: data.message || 'Unknown error',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error during login:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Error',
+                    text: error.message || 'An unknown error occurred',
+                });
+            });
+    });
+</script>
+</body>
+</html>
